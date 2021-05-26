@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-const bottomContainerHeight = 80.0;
-const bottomContainerColor = Color(0xffeb1555);
-const activeCardColor = Color(0xff1d1e33);
+import 'constants.dart';
+import 'icon_content.dart';
+import 'reusable_card.dart';
+
+enum Gender {
+  male,
+  female,
+}
 
 class InputPage extends StatefulWidget {
   @override
@@ -11,6 +16,23 @@ class InputPage extends StatefulWidget {
 }
 
 class _InputPageState extends State<InputPage> {
+  Color maleCardColor = kInactiveCardColor;
+  Color femaleCardColor = kInactiveCardColor;
+  Gender selected;
+  int userHeight = 165;
+
+  void tap(Gender gender) {
+    setState(() {
+      if (gender == Gender.male) {
+        maleCardColor = kActiveCardColor;
+        femaleCardColor = kInactiveCardColor;
+      } else {
+        femaleCardColor = kActiveCardColor;
+        maleCardColor = kInactiveCardColor;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,91 +40,115 @@ class _InputPageState extends State<InputPage> {
         title: Text('BMI CALCULATOR'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             child: Row(
               children: [
                 Expanded(
-                  child: BmiCard(
-                    color: activeCardColor,
-                    child: SexIcon(
-                      genderIcon: FontAwesomeIcons.mars,
-                      genderText: 'MALE',
+                  child: ReusableCard(
+                    onTap: () {
+                      setState(() {
+                        selected = Gender.male;
+                      });
+                    },
+                    color: selected == Gender.male
+                        ? kActiveCardColor
+                        : kInactiveCardColor,
+                    child: IconContent(
+                      iconData: FontAwesomeIcons.mars,
+                      label: 'MALE',
                     ),
                   ),
                 ),
                 Expanded(
-                    child: BmiCard(
-                        color: activeCardColor,
-                        child: SexIcon(
-                          genderIcon: FontAwesomeIcons.venus,
-                          genderText: 'FEMALE',
-                        ))),
+                  child: ReusableCard(
+                    onTap: () {
+                      setState(() {
+                        selected = Gender.female;
+                      });
+                    },
+                    color: selected == Gender.female
+                        ? kActiveCardColor
+                        : kInactiveCardColor,
+                    child: IconContent(
+                      iconData: FontAwesomeIcons.venus,
+                      label: 'FEMALE',
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           Expanded(
             child: Row(
               children: [
-                Expanded(child: BmiCard(color: activeCardColor)),
+                Expanded(
+                  child: ReusableCard(
+                    color: kActiveCardColor,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('HEIGHT', style: kLabelStyle),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              userHeight.toString(),
+                              style: kChunkyLabelStyle,
+                            ),
+                            Text(
+                              'cm',
+                              style: kLabelStyle,
+                            ),
+                            SizedBox(width: 40),
+                            Text(
+                              ((userHeight ~/ 2.54) ~/ 12).toString() +
+                                  '\'' +
+                                  ((userHeight ~/ 2.54) % 12).toString() +
+                                  '"',
+                              style: kChunkyLabelStyle,
+                            ),
+                            Text(
+                              'in',
+                              style: kLabelStyle,
+                            ),
+                          ],
+                        ),
+                        Slider(
+                          min: 130,
+                          value: userHeight.toDouble(),
+                          max: 200,
+                          onChanged: (height) {
+                            setState(() {
+                              userHeight = height.toInt();
+                            });
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           Expanded(
             child: Row(
               children: [
-                Expanded(child: BmiCard(color: activeCardColor)),
-                Expanded(child: BmiCard(color: activeCardColor)),
+                Expanded(child: ReusableCard(color: kActiveCardColor)),
+                Expanded(child: ReusableCard(color: kActiveCardColor)),
               ],
             ),
           ),
+          Container(
+            color: kBottomContainerColor,
+            margin: EdgeInsets.only(top: 10),
+            width: double.infinity,
+            height: kBottomContainerHeight,
+          )
         ],
-      ),
-    );
-  }
-}
-
-class SexIcon extends StatelessWidget {
-  SexIcon({@required this.genderIcon, @required this.genderText});
-  final IconData genderIcon;
-  final String genderText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          genderIcon,
-          size: 80.0,
-        ),
-        SizedBox(height: 15),
-        Text(
-          genderText,
-          style: TextStyle(
-            fontSize: 18,
-            color: Color(0xff8d8e98),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class BmiCard extends StatelessWidget {
-  BmiCard({@required this.color, this.child});
-
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: child,
-      margin: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
